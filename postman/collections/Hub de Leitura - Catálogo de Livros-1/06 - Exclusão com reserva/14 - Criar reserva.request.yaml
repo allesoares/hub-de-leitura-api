@@ -1,0 +1,31 @@
+$kind: http-request
+name: 14 - Criar reserva
+description: Reserva ativa criada para o livro
+url: '{{baseUrl}}/api/reservations'
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "bookId": {{reservedBookId}},
+      "notes": "Reserva para testar exclusão de livro reservado"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 201', function () {
+        pm.response.to.have.status(201);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Reserva ativa criada para o livro', function () {
+        pm.expect(data.reservation.bookId).to.eql(pm.collectionVariables.get('reservedBookId'));
+        pm.expect(data.reservation.status).to.eql('active');
+      });
+
+      pm.collectionVariables.set('reservationId', data.reservation.id);
+    language: text/javascript
+order: 2000

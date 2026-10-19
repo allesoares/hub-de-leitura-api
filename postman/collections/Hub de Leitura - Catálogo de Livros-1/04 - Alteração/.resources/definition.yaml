@@ -1,0 +1,4 @@
+$kind: folder
+name: 04 - Alteração
+description: Atualização válida e consulta para confirmar persistência. O negativo de alteração fica após a exclusão para garantir um ID inexistente.
+order: 4000

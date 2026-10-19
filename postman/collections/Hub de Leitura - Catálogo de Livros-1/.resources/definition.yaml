@@ -1,0 +1,19 @@
+$kind: collection
+name: Hub de Leitura - Catálogo de Livros
+description: "Exercício de Catálogo de Livros: sete operações, negativos de cadastro (400), alteração (404) e exclusão com reserva (400). Execute as 18 requisições em ordem."
+variables:
+  baseUrl: http://localhost:3000
+  adminEmail: admin@biblioteca.com
+  adminPassword: admin123
+  adminToken: ""
+  bookId: ""
+  bookTitle: ""
+  reservedBookId: ""
+  reservedBookTitle: ""
+  reservationId: ""
+auth:
+  - id: 7922e109-ab0d-4881-8373-70458c5d60fc
+    type: bearer
+    name: Administrador
+    credentials:
+      token: "{{adminToken}}"

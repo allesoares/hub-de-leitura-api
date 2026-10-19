@@ -1,0 +1,20 @@
+$kind: http-request
+name: 16 - Negativo - Excluir livro reservado
+description: Exclusão bloqueada pela reserva ativa
+url: '{{baseUrl}}/api/books/{{reservedBookId}}'
+method: DELETE
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 400', function () {
+        pm.response.to.have.status(400);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Exclusão bloqueada pela reserva ativa', function () {
+        pm.expect(data.activeReservations).to.eql(1);
+        pm.expect(data.message).to.eql('Não é possível deletar livro com 1 reserva(s) ativa(s).');
+      });
+    language: text/javascript
+order: 4000

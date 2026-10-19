@@ -1,0 +1,20 @@
+$kind: http-request
+name: 10 - Excluir livro sem reservas
+description: Livro correto excluído
+url: '{{baseUrl}}/api/books/{{bookId}}'
+method: DELETE
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Livro correto excluído', function () {
+        pm.expect(data.message).to.eql('Livro deletado com sucesso.');
+        pm.expect(data.deletedBook.id).to.eql(pm.collectionVariables.get('bookId'));
+      });
+    language: text/javascript
+order: 1000

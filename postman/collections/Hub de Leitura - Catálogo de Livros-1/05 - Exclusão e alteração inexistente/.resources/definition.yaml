@@ -1,0 +1,4 @@
+$kind: folder
+name: 05 - Exclusão e alteração inexistente
+description: 'Exclui o livro sem reservas, confirma a ausência e usa esse ID no PUT negativo esperado como 404.'
+order: 5000

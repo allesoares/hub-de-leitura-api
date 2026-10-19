@@ -1,0 +1,4 @@
+$kind: folder
+name: 02 - Cadastro
+description: Cadastro válido e rejeição do campo title acima do limite de 200 caracteres.
+order: 2000

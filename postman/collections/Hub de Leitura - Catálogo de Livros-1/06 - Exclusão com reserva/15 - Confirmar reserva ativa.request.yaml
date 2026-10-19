@@ -1,0 +1,22 @@
+$kind: http-request
+name: 15 - Confirmar reserva ativa
+description: Livro possui reserva ativa
+url: '{{baseUrl}}/api/books/{{reservedBookId}}'
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Livro possui reserva ativa', function () {
+        pm.expect(data.statistics.active_reservations).to.eql(1);
+        pm.expect(data.book.available_copies).to.eql(0);
+      });
+    language: text/javascript
+order: 3000

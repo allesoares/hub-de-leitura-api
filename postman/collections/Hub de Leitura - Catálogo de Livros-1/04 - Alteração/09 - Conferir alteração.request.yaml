@@ -1,0 +1,22 @@
+$kind: http-request
+name: 09 - Conferir alteração
+description: Alterações persistidas
+url: '{{baseUrl}}/api/books/{{bookId}}'
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Alterações persistidas', function () {
+        pm.expect(data.book.title).to.eql(pm.collectionVariables.get('bookTitle') + ' - revisado');
+        pm.expect(data.book.total_copies).to.eql(5);
+      });
+    language: text/javascript
+order: 2000

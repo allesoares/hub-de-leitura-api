@@ -1,0 +1,22 @@
+$kind: http-request
+name: 07 - Consultar livro por ID
+description: Livro correto retornado
+url: '{{baseUrl}}/api/books/{{bookId}}'
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Livro correto retornado', function () {
+        pm.expect(data.book.id).to.eql(pm.collectionVariables.get('bookId'));
+        pm.expect(data.book.title).to.eql(pm.collectionVariables.get('bookTitle'));
+      });
+    language: text/javascript
+order: 4000

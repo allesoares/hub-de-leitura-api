@@ -1,0 +1,22 @@
+$kind: http-request
+name: 11 - Confirmar exclusão
+description: Livro excluído não existe
+url: '{{baseUrl}}/api/books/{{bookId}}'
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 404', function () {
+        pm.response.to.have.status(404);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Livro excluído não existe', function () {
+        pm.expect(data.message).to.eql('Livro não encontrado.');
+        pm.expect(data.bookId).to.eql(pm.collectionVariables.get('bookId'));
+      });
+    language: text/javascript
+order: 2000

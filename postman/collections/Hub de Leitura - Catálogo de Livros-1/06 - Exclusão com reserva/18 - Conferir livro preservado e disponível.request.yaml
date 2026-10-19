@@ -1,0 +1,23 @@
+$kind: http-request
+name: 18 - Conferir livro preservado e disponível
+description: Livro preservado e disponível
+url: '{{baseUrl}}/api/books/{{reservedBookId}}'
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Livro preservado e disponível', function () {
+        pm.expect(data.book.title).to.eql(pm.collectionVariables.get('reservedBookTitle'));
+        pm.expect(data.statistics.active_reservations).to.eql(0);
+        pm.expect(data.book.available_copies).to.eql(1);
+      });
+    language: text/javascript
+order: 6000

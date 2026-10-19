@@ -1,0 +1,22 @@
+$kind: http-request
+name: 05 - Listar categorias
+description: Categorias retornadas
+url: '{{baseUrl}}/api/books/categories'
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Categorias retornadas', function () {
+        pm.expect(data.categories).to.be.an('array').and.not.empty;
+        pm.expect(data.total).to.eql(data.categories.length);
+      });
+    language: text/javascript
+order: 2000

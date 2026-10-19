@@ -1,0 +1,32 @@
+$kind: http-request
+name: 03 - Negativo - Título acima do limite
+description: Título acima de 200 caracteres rejeitado
+url: '{{baseUrl}}/api/books'
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "author": "Alexandre",
+      "category": "Testes de API",
+      "total_copies": 3,
+      "available_copies": 3
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 400', function () {
+        pm.response.to.have.status(400);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Título acima de 200 caracteres rejeitado', function () {
+        pm.expect(data.field).to.eql('title');
+        pm.expect(data.message).to.include('200');
+      });
+    language: text/javascript
+order: 2000

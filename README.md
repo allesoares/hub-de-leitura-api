@@ -1,6 +1,11 @@
 # 📚 Hub de Leitura API - Sistema de Biblioteca para QA
 
+
 **API educacional completa para aprendizado e prática de Quality Assurance (QA)**
+
+##Json do postman##
+
+
 
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
 ![Express](https://img.shields.io/badge/Express-4.18+-blue.svg)

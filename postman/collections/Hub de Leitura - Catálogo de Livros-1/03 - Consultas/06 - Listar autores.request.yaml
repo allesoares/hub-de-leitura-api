@@ -1,0 +1,22 @@
+$kind: http-request
+name: 06 - Listar autores
+description: Autores retornados
+url: '{{baseUrl}}/api/books/authors'
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Autores retornados', function () {
+        pm.expect(data.authors).to.be.an('array').and.not.empty;
+        pm.expect(data.total).to.eql(data.authors.length);
+      });
+    language: text/javascript
+order: 3000

@@ -1,0 +1,4 @@
+$kind: folder
+name: 06 - Exclusão com reserva
+description: 'Cria um segundo livro e reserva, testa a exclusão bloqueada e cancela a reserva. O livro e o histórico cancelado permanecem no banco, pois não existe endpoint para remover esse vínculo.'
+order: 6000

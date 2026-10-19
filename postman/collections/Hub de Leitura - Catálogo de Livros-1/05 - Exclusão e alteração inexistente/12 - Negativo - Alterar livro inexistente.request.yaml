@@ -1,0 +1,31 @@
+$kind: http-request
+name: 12 - Negativo - Alterar livro inexistente
+description: Alteração de livro inexistente rejeitada
+url: '{{baseUrl}}/api/books/{{bookId}}'
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "{{bookTitle}} - revisado",
+      "author": "Alexandre",
+      "total_copies": 5,
+      "available_copies": 5
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 404', function () {
+        pm.response.to.have.status(404);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Alteração de livro inexistente rejeitada', function () {
+        pm.expect(data.message).to.eql('Livro não encontrado.');
+        pm.expect(data.bookId).to.eql(pm.collectionVariables.get('bookId'));
+      });
+    language: text/javascript
+order: 3000

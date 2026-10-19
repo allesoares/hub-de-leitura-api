@@ -1,0 +1,4 @@
+$kind: folder
+name: 03 - Consultas
+description: As quatro consultas públicas do Catálogo usando dados da execução.
+order: 3000

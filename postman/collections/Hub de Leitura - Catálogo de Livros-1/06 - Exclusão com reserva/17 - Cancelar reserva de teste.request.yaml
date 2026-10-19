@@ -1,0 +1,20 @@
+$kind: http-request
+name: 17 - Cancelar reserva de teste
+description: Reserva de teste cancelada
+url: '{{baseUrl}}/api/reservations/{{reservationId}}'
+method: DELETE
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Reserva de teste cancelada', function () {
+        pm.expect(data.message).to.eql('Reserva cancelada com sucesso.');
+        pm.expect(data.cancelledReservation.id).to.eql(pm.collectionVariables.get('reservationId'));
+      });
+    language: text/javascript
+order: 5000

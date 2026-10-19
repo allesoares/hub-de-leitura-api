@@ -1,0 +1,35 @@
+$kind: http-request
+name: 02 - Criar livro
+description: Livro cadastrado
+url: '{{baseUrl}}/api/books'
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Livro QA {{$timestamp}}",
+      "author": "Alexandre",
+      "category": "Testes de API",
+      "total_copies": 3,
+      "available_copies": 3
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 201', function () {
+        pm.response.to.have.status(201);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Livro cadastrado', function () {
+        pm.expect(data.message).to.eql('Livro criado com sucesso.');
+        pm.expect(data.book.id).to.be.a('number').above(0);
+      });
+
+      pm.collectionVariables.set('bookId', data.book.id);
+      pm.collectionVariables.set('bookTitle', data.book.title);
+    language: text/javascript
+order: 1000

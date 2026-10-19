@@ -1,0 +1,30 @@
+$kind: http-request
+description: Atualização confirmada
+url: "{{baseUrl}}/api/books/{{bookId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "{{bookTitle}} - revisado",
+      "author": "Alexandre",
+      "total_copies": 5,
+      "available_copies": 5
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Atualização confirmada', function () {
+        pm.expect(data.message).to.eql('Livro atualizado com sucesso.');
+        pm.expect(data.bookId).to.eql(pm.collectionVariables.get('bookId'));
+      });
+    language: text/javascript
+order: 1000

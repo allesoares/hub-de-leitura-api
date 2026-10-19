@@ -1,0 +1,4 @@
+$kind: folder
+name: 01 - Preparação
+description: Login do administrador para as operações protegidas do Catálogo e a reserva de teste.
+order: 1000

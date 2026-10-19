@@ -1,0 +1,21 @@
+$kind: http-request
+description: Livro encontrado na listagem
+url: "{{baseUrl}}/api/books?search={{bookTitle}}&limit=10&page=1"
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      const data = pm.response.json();
+
+      pm.test('Livro encontrado na listagem', function () {
+        pm.expect(data.books[0].id).to.eql(pm.collectionVariables.get('bookId'));
+        pm.expect(data.pagination.showing).to.eql(data.books.length);
+      });
+    language: text/javascript
+order: 1000

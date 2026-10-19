@@ -1,0 +1,761 @@
+{
+  "info": {
+    "_postman_id": "f9ae9b1c-d97c-4a61-87cb-b29770bb0633",
+    "name": "Hub de Leitura - Catálogo de Livros",
+    "description": "Exercício de Catálogo de Livros: sete operações, negativos de cadastro (400), alteração (404) e exclusão com reserva (400). Execute as 18 requisições em ordem.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{adminToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@biblioteca.com",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "admin123",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookTitle",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reservedBookId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reservedBookTitle",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reservationId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Preparação",
+      "description": "Login do administrador para as operações protegidas do Catálogo e a reserva de teste.",
+      "item": [
+        {
+          "name": "01 - Login administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Administrador autenticado', function () {",
+                  "  pm.expect(data.isAdmin).to.eql(true);",
+                  "  pm.expect(data.token_for_swagger).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('adminToken', data.token_for_swagger);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/login",
+            "description": "Administrador autenticado",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Cadastro",
+      "description": "Cadastro válido e rejeição do campo title acima do limite de 200 caracteres.",
+      "item": [
+        {
+          "name": "02 - Criar livro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Livro cadastrado', function () {",
+                  "  pm.expect(data.message).to.eql('Livro criado com sucesso.');",
+                  "  pm.expect(data.book.id).to.be.a('number').above(0);",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('bookId', data.book.id);",
+                  "pm.collectionVariables.set('bookTitle', data.book.title);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/books",
+            "description": "Livro cadastrado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Livro QA {{$timestamp}}\",\n  \"author\": \"Alexandre\",\n  \"category\": \"Testes de API\",\n  \"total_copies\": 3,\n  \"available_copies\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "03 - Negativo - Título acima do limite",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Título acima de 200 caracteres rejeitado', function () {",
+                  "  pm.expect(data.field).to.eql('title');",
+                  "  pm.expect(data.message).to.include('200');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/books",
+            "description": "Título acima de 200 caracteres rejeitado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n  \"author\": \"Alexandre\",\n  \"category\": \"Testes de API\",\n  \"total_copies\": 3,\n  \"available_copies\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Consultas",
+      "description": "As quatro consultas públicas do Catálogo usando dados da execução.",
+      "item": [
+        {
+          "name": "04 - Listar livros (com filtro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Livro encontrado na listagem', function () {",
+                  "  pm.expect(data.books[0].id).to.eql(pm.collectionVariables.get('bookId'));",
+                  "  pm.expect(data.pagination.showing).to.eql(data.books.length);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/books?search={{bookTitle}}&limit=10&page=1",
+            "description": "Livro encontrado na listagem",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "05 - Listar categorias",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Categorias retornadas', function () {",
+                  "  pm.expect(data.categories).to.be.an('array').and.not.empty;",
+                  "  pm.expect(data.total).to.eql(data.categories.length);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/books/categories",
+            "description": "Categorias retornadas",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "06 - Listar autores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Autores retornados', function () {",
+                  "  pm.expect(data.authors).to.be.an('array').and.not.empty;",
+                  "  pm.expect(data.total).to.eql(data.authors.length);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/books/authors",
+            "description": "Autores retornados",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "07 - Consultar livro por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Livro correto retornado', function () {",
+                  "  pm.expect(data.book.id).to.eql(pm.collectionVariables.get('bookId'));",
+                  "  pm.expect(data.book.title).to.eql(pm.collectionVariables.get('bookTitle'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/books/{{bookId}}",
+            "description": "Livro correto retornado",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Alteração",
+      "description": "Atualização válida e consulta para confirmar persistência. O negativo de alteração fica após a exclusão para garantir um ID inexistente.",
+      "item": [
+        {
+          "name": "08 - Atualizar livro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Atualização confirmada', function () {",
+                  "  pm.expect(data.message).to.eql('Livro atualizado com sucesso.');",
+                  "  pm.expect(data.bookId).to.eql(pm.collectionVariables.get('bookId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/books/{{bookId}}",
+            "description": "Atualização confirmada",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{bookTitle}} - revisado\",\n  \"author\": \"Alexandre\",\n  \"total_copies\": 5,\n  \"available_copies\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "09 - Conferir alteração",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Alterações persistidas', function () {",
+                  "  pm.expect(data.book.title).to.eql(pm.collectionVariables.get('bookTitle') + ' - revisado');",
+                  "  pm.expect(data.book.total_copies).to.eql(5);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/books/{{bookId}}",
+            "description": "Alterações persistidas",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Exclusão e alteração inexistente",
+      "description": "Exclui o livro sem reservas, confirma a ausência e usa esse ID no PUT negativo esperado como 404.",
+      "item": [
+        {
+          "name": "10 - Excluir livro sem reservas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Livro correto excluído', function () {",
+                  "  pm.expect(data.message).to.eql('Livro deletado com sucesso.');",
+                  "  pm.expect(data.deletedBook.id).to.eql(pm.collectionVariables.get('bookId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/books/{{bookId}}",
+            "description": "Livro correto excluído"
+          }
+        },
+        {
+          "name": "11 - Confirmar exclusão",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Livro excluído não existe', function () {",
+                  "  pm.expect(data.message).to.eql('Livro não encontrado.');",
+                  "  pm.expect(data.bookId).to.eql(pm.collectionVariables.get('bookId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/books/{{bookId}}",
+            "description": "Livro excluído não existe",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "12 - Negativo - Alterar livro inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Alteração de livro inexistente rejeitada', function () {",
+                  "  pm.expect(data.message).to.eql('Livro não encontrado.');",
+                  "  pm.expect(data.bookId).to.eql(pm.collectionVariables.get('bookId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/books/{{bookId}}",
+            "description": "Alteração de livro inexistente rejeitada",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{bookTitle}} - revisado\",\n  \"author\": \"Alexandre\",\n  \"total_copies\": 5,\n  \"available_copies\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Exclusão com reserva",
+      "description": "Cria um segundo livro e reserva, testa a exclusão bloqueada e cancela a reserva. O livro e o histórico cancelado permanecem no banco, pois não existe endpoint para remover esse vínculo.",
+      "item": [
+        {
+          "name": "13 - Criar livro para reserva",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Livro de reserva cadastrado', function () {",
+                  "  pm.expect(data.message).to.eql('Livro criado com sucesso.');",
+                  "  pm.expect(data.book.id).to.be.a('number').above(0);",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('reservedBookId', data.book.id);",
+                  "pm.collectionVariables.set('reservedBookTitle', data.book.title);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/books",
+            "description": "Livro de reserva cadastrado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Livro QA com reserva {{$timestamp}}\",\n  \"author\": \"Alexandre\",\n  \"category\": \"Testes de API\",\n  \"total_copies\": 1,\n  \"available_copies\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "14 - Criar reserva",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Reserva ativa criada para o livro', function () {",
+                  "  pm.expect(data.reservation.bookId).to.eql(pm.collectionVariables.get('reservedBookId'));",
+                  "  pm.expect(data.reservation.status).to.eql('active');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('reservationId', data.reservation.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/reservations",
+            "description": "Reserva ativa criada para o livro",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookId\": {{reservedBookId}},\n  \"notes\": \"Reserva para testar exclusão de livro reservado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "15 - Confirmar reserva ativa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Livro possui reserva ativa', function () {",
+                  "  pm.expect(data.statistics.active_reservations).to.eql(1);",
+                  "  pm.expect(data.book.available_copies).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/books/{{reservedBookId}}",
+            "description": "Livro possui reserva ativa",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "16 - Negativo - Excluir livro reservado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Exclusão bloqueada pela reserva ativa', function () {",
+                  "  pm.expect(data.activeReservations).to.eql(1);",
+                  "  pm.expect(data.message).to.eql('Não é possível deletar livro com 1 reserva(s) ativa(s).');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/books/{{reservedBookId}}",
+            "description": "Exclusão bloqueada pela reserva ativa"
+          }
+        },
+        {
+          "name": "17 - Cancelar reserva de teste",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Reserva de teste cancelada', function () {",
+                  "  pm.expect(data.message).to.eql('Reserva cancelada com sucesso.');",
+                  "  pm.expect(data.cancelledReservation.id).to.eql(pm.collectionVariables.get('reservationId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/reservations/{{reservationId}}",
+            "description": "Reserva de teste cancelada"
+          }
+        },
+        {
+          "name": "18 - Conferir livro preservado e disponível",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "",
+                  "pm.test('Livro preservado e disponível', function () {",
+                  "  pm.expect(data.book.title).to.eql(pm.collectionVariables.get('reservedBookTitle'));",
+                  "  pm.expect(data.statistics.active_reservations).to.eql(0);",
+                  "  pm.expect(data.book.available_copies).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/books/{{reservedBookId}}",
+            "description": "Livro preservado e disponível",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
